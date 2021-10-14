@@ -33,17 +33,17 @@ const D1MACH5 = log10(2.)
 #             Lawrence Livermore National Laboratory
 #             Livermore, CA  94550
 
-function DRF(X::Float64, Y::Float64, Z::Float64)
+function DRF(X::Number, Y::Number, Z::Number)
 
-    ERRTOL = (4.0*D1MACH3)^(1.0/6.0)
-    LOLIM  = 5.0 * D1MACH1
-    UPLIM  = D1MACH2/5.0
-    C1 = 1.0/24.0
-    C2 = 3.0/44.0
-    C3 = 1.0/14.0
+    ERRTOL = (4*D1MACH3)^(1/6)
+    LOLIM  = 5 * D1MACH1
+    UPLIM  = D1MACH2/5
+    C1 = 1/24
+    C2 = 3/44
+    C3 = 1/14
 
-    ans = 0.0
-    if min(X,Y,Z) < 0.0
+    ans = zero(X)
+    if min(X,Y,Z) < 0
         return ans, 1
     end
 
@@ -58,30 +58,30 @@ function DRF(X::Float64, Y::Float64, Z::Float64)
     XN = X
     YN = Y
     ZN = Z
-    MU = 0.
-    XNDEV = 0.
-    YNDEV = 0.
-    ZNDEV = 0.
+    MU = zero(X)
+    XNDEV = zero(X)
+    YNDEV = zero(X)
+    ZNDEV = zero(X)
 
     while true
-        MU = (XN+YN+ZN)/3.0
-        XNDEV = 2.0 - (MU+XN)/MU
-        YNDEV = 2.0 - (MU+YN)/MU
-        ZNDEV = 2.0 - (MU+ZN)/MU
+        MU = (XN+YN+ZN)/3
+        XNDEV = 2 - (MU+XN)/MU
+        YNDEV = 2 - (MU+YN)/MU
+        ZNDEV = 2 - (MU+ZN)/MU
         EPSLON = max(abs(XNDEV),abs(YNDEV),abs(ZNDEV))
         if (EPSLON < ERRTOL) break end
         XNROOT = sqrt(XN)
         YNROOT = sqrt(YN)
         ZNROOT = sqrt(ZN)
         LAMDA = XNROOT*(YNROOT+ZNROOT) + YNROOT*ZNROOT
-        XN = (XN+LAMDA)*0.250
-        YN = (YN+LAMDA)*0.250
-        ZN = (ZN+LAMDA)*0.250
+        XN = (XN+LAMDA)*1/4
+        YN = (YN+LAMDA)*1/4
+        ZN = (ZN+LAMDA)*1/4
     end
 
     E2 = XNDEV*YNDEV - ZNDEV*ZNDEV
     E3 = XNDEV*YNDEV*ZNDEV
-    S  = 1.0 + (C1*E2-0.10-C2*E3)*E2 + C3*E3
+    S  = 1 + (C1*E2-1/10-C2*E3)*E2 + C3*E3
     ans = S/sqrt(MU)
 
     return ans, 0
@@ -112,19 +112,19 @@ end
 #             Lawrence Livermore National Laboratory
 #             Livermore, CA  94550
 
-function DRD(X::Float64, Y::Float64, Z::Float64)
+function DRD(X::Number, Y::Number, Z::Number)
 
-    ERRTOL = (D1MACH3/3.0)^(1.0/6.0)
-    LOLIM  = 2.0/(D1MACH2)^(2.0/3.0)
-    TUPLIM = D1MACH1^(1.0E0/3.0E0)
-    TUPLIM = (0.10*ERRTOL)^(1.0E0/3.0E0)/TUPLIM
+    ERRTOL = (D1MACH3/3)^(1/6)
+    LOLIM  = 2/(D1MACH2)^(2/3)
+    TUPLIM = D1MACH1^(1/3)
+    TUPLIM = (1/10*ERRTOL)^(1/3)/TUPLIM
     UPLIM  = TUPLIM^2.0
-    C1 = 3.0/14.0
-    C2 = 1.0/6.0
-    C3 = 9.0/22.0
-    C4 = 3.0/26.0
+    C1 = 3/14
+    C2 = 1/6
+    C3 = 9/22
+    C4 = 3/26
 
-    ans = 0.0
+    ans = zero(X)
     if min(X,Y) < 0.0
         return ans, 1
     end
@@ -140,15 +140,15 @@ function DRD(X::Float64, Y::Float64, Z::Float64)
     XN = X
     YN = Y
     ZN = Z
-    SIGMA = 0.0
-    POWER4 = 1.0
-    MU = 0.
-    XNDEV = 0.
-    YNDEV = 0.
-    ZNDEV = 0.
+    SIGMA = zero(X)
+    POWER4 = one(X)
+    MU = zero(X)
+    XNDEV = zero(X)
+    YNDEV = zero(X)
+    ZNDEV = zero(X)
 
     while true
-        MU = (XN+YN+3.0*ZN)*0.20
+        MU = (XN+YN+3*ZN)*2/5
         XNDEV = (MU-XN)/MU
         YNDEV = (MU-YN)/MU
         ZNDEV = (MU-ZN)/MU
@@ -159,20 +159,20 @@ function DRD(X::Float64, Y::Float64, Z::Float64)
         ZNROOT = sqrt(ZN)
         LAMDA = XNROOT*(YNROOT+ZNROOT) + YNROOT*ZNROOT
         SIGMA = SIGMA + POWER4/(ZNROOT*(ZN+LAMDA))
-        POWER4 = POWER4*0.250
-        XN = (XN+LAMDA)*0.250
-        YN = (YN+LAMDA)*0.250
-        ZN = (ZN+LAMDA)*0.250
+        POWER4 = POWER4*1/4
+        XN = (XN+LAMDA)*1/4
+        YN = (YN+LAMDA)*1/4
+        ZN = (ZN+LAMDA)*1/4
     end
 
     EA = XNDEV*YNDEV
     EB = ZNDEV*ZNDEV
     EC = EA - EB
-    ED = EA - 6.0*EB
+    ED = EA - 6*EB
     EF = ED + EC + EC
-    S1 = ED*(-C1+0.250*C3*ED-1.50*C4*ZNDEV*EF)
+    S1 = ED*(-C1+1/4*C3*ED-3/2*C4*ZNDEV*EF)
     S2 = ZNDEV*(C2*EF+ZNDEV*(-C3*EC+ZNDEV*C4*EA))
-    ans = 3.0*SIGMA + POWER4*(1.0+S1+S2)/(MU*sqrt(MU))
+    ans = 3*SIGMA + POWER4*(1+S1+S2)/(MU*sqrt(MU))
 
     return ans, 0
 end
@@ -200,15 +200,15 @@ end
 #             Lawrence Livermore National Laboratory
 #             Livermore, CA  94550
 
-function DRC(X::Float64, Y::Float64)
+function DRC(X::Number, Y::Number)
 
-    ERRTOL = (D1MACH3/16.0)^(1.0/6.0)
-    LOLIM  = 5.0 * D1MACH1
-    UPLIM  = D1MACH2 / 5.0
-    C1 = 1.0/7.0
-    C2 = 9.0/22.0
+    ERRTOL = (D1MACH3/16)^(1/6)
+    LOLIM  = 5 * D1MACH1
+    UPLIM  = D1MACH2 / 5
+    C1 = 1/7
+    C2 = 9/22
 
-    ans = 0.0
+    ans = zero(X)
     if X < 0.0 || Y <= 0.0
         return ans, 1
     end
@@ -223,20 +223,20 @@ function DRC(X::Float64, Y::Float64)
 
     XN = X
     YN = Y
-    MU = 0.
-    SN = 0.
+    MU = zero(X)
+    SN = zero(X)
 
     while true
-        MU = (XN+YN+YN)/3.0
-        SN = (YN+MU)/MU - 2.0
+        MU = (XN+YN+YN)/3
+        SN = (YN+MU)/MU - 2
         if abs(SN) < ERRTOL break end
-        LAMDA = 2.0*sqrt(XN)*sqrt(YN) + YN
-        XN = (XN+LAMDA)*0.250
-        YN = (YN+LAMDA)*0.250
+        LAMDA = 2*sqrt(XN)*sqrt(YN) + YN
+        XN = (XN+LAMDA)*1/4
+        YN = (YN+LAMDA)*1/4
     end
 
     S = SN*SN*(0.30+SN*(C1+SN*(0.3750+SN*C2)))
-    ans = (1.0+S)/sqrt(MU)
+    ans = (1+S)/sqrt(MU)
 
     return ans,0
 end
@@ -266,18 +266,18 @@ end
 #             Lawrence Livermore National Laboratory
 #             Livermore, CA  94550
 
-function DRJ(X::Float64, Y::Float64, Z::Float64, P::Float64)
+function DRJ(X::Number, Y::Number, Z::Number, P::Number)
 
-    ERRTOL = (D1MACH3/3.0)^(1.0/6.0)
-    LOLIM  = (5.0 * D1MACH1)^(1.0/3.0)
-    UPLIM  = 0.30*( D1MACH2 / 5.0)^(1.0/3.0)
+    ERRTOL = (D1MACH3/3)^(1/6)
+    LOLIM  = (5 * D1MACH1)^(1/3)
+    UPLIM  = 0.30*( D1MACH2 / 5)^(1/3)
 
     C1 = 3.0/14.0
     C2 = 1.0/3.0
     C3 = 3.0/22.0
     C4 = 3.0/26.0
 
-    ans = 0.0
+    ans = zero(X)
     if min(X,Y,Z) < 0.0
         return ans, 1
     end
@@ -295,16 +295,16 @@ function DRJ(X::Float64, Y::Float64, Z::Float64, P::Float64)
     YN = Y
     ZN = Z
     PN = P
-    SIGMA = 0.0
-    POWER4 = 1.0
-    MU = 0.
-    XNDEV = 0.
-    YNDEV = 0.
-    ZNDEV = 0.
-    PNDEV = 0.
+    SIGMA = zero(X)
+    POWER4 = one(X)
+    MU = zero(X)
+    XNDEV = zero(X)
+    YNDEV = zero(X)
+    ZNDEV = zero(X)
+    PNDEV = zero(X)
 
     while true
-        MU = (XN+YN+ZN+PN+PN)*0.20
+        MU = (XN+YN+ZN+PN+PN)*2/5
         XNDEV = (MU-XN)/MU
         YNDEV = (MU-YN)/MU
         ZNDEV = (MU-ZN)/MU
@@ -320,22 +320,22 @@ function DRJ(X::Float64, Y::Float64, Z::Float64, P::Float64)
         BETA = PN*(PN+LAMDA)*(PN+LAMDA)
         drc,IER = DRC(ALFA,BETA)
         SIGMA = SIGMA + POWER4*drc
-        POWER4 = POWER4*0.250
-        XN = (XN+LAMDA)*0.250
-        YN = (YN+LAMDA)*0.250
-        ZN = (ZN+LAMDA)*0.250
-        PN = (PN+LAMDA)*0.250
+        POWER4 = POWER4*1/4
+        XN = (XN+LAMDA)*1/4
+        YN = (YN+LAMDA)*1/4
+        ZN = (ZN+LAMDA)*1/4
+        PN = (PN+LAMDA)*1/4
     end
 
     EA = XNDEV*(YNDEV+ZNDEV) + YNDEV*ZNDEV
     EB = XNDEV*YNDEV*ZNDEV
     EC = PNDEV*PNDEV
-    E2 = EA - 3.0*EC
-    E3 = EB + 2.0*PNDEV*(EA-EC)
-    S1 = 1.0 + E2*(-C1+0.750*C3*E2-1.50*C4*E3)
+    E2 = EA - 3*EC
+    E3 = EB + 2*PNDEV*(EA-EC)
+    S1 = 1 + E2*(-C1+0.750*C3*E2-1.50*C4*E3)
     S2 = EB*(0.50*C2+PNDEV*(-C3-C3+PNDEV*C4))
     S3 = PNDEV*EA*(C2-PNDEV*C3) - C2*PNDEV*EC
-    ans = 3.0*SIGMA + POWER4*(S1+S2+S3)/(MU* sqrt(MU))
+    ans = 3*SIGMA + POWER4*(S1+S2+S3)/(MU* sqrt(MU))
 
     return ans, IER
 end

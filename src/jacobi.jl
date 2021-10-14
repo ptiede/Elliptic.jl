@@ -8,25 +8,25 @@ export am,
 
 # Abramowitz & Stegun, section 16.4, p571
 const _ambuf = Array{Float64}(undef, 10)
-function _am(u::Float64, m::Float64, tol::Float64)
-    if u == 0. return 0. end
+function _am(u::Number, m::Number, tol::Number)
+    if u == 0 return 0. end
 
     sqrt_tol = sqrt(tol)
     if m < sqrt_tol
         # A&S 16.13.4
-        return u - 0.25*m*(u - 0.5*sin(2.0*u))
+        return u - 1/4*m*(u - 1/2*sin(2*u))
     end
-    m1 = 1. - m
+    m1 = 1 - m
     if m1 < sqrt_tol
         # A&S 16.15.4
         t = tanh(u)
-        return asin(t) + 0.25*m1*(t - u*(1. - t^2))*cosh(u)
+        return asin(t) + 1/4*m1*(t - u*(1 - t^2))*cosh(u)
     end
 
-    a,b,c,n = 1., sqrt(m1), sqrt(m), 0
+    a,b,c,n = 1, sqrt(m1), sqrt(m), 0
     while abs(c) > tol
         @assert n < 10
-        a,b,c,n = 0.5*(a+b), sqrt(a*b), 0.5*(a-b), n+1
+        a,b,c,n = 1/2*(a+b), sqrt(a*b), 0.5*(a-b), n+1
         _ambuf[n] = c/a
     end
 
@@ -36,7 +36,7 @@ function _am(u::Float64, m::Float64, tol::Float64)
     end
     phi
 end
-_am(u::Float64, m::Float64) = _am(u, m, eps(Float64))
+_am(u::T, m::T) where {T} = _am(u, m, eps(T))
 
 """
     am(u::Real, m::Real, [tol::Real=eps(Float64)])
@@ -45,18 +45,17 @@ Returns amplitude, φ, such that u = F(φ | m)
 
 Landen sequence with convergence to `tol` used if `√(tol) ≤ m ≤ 1 - √(tol)`
 """
-function am(u::Float64, m::Float64, tol::Float64)
-    (m < 0. || m > 1.) && throw(DomainError(m, "argument m not in [0,1]"))
+function am(u::Number, m::Number, tol::Number)
+    (m < 0 || m > 1) && throw(DomainError(m, "argument m not in [0,1]"))
     _am(u, m, tol)
 end
-am(u::Float64, m::Float64) = am(u, m, eps(Float64))
-am(u::Real, m::Real) = am(Float64(u), Float64(m))
+am(u::T, m::T) where {T} = am(u, m, eps(T))
 
 for (f,a,b,c) in ((:sn, :(sin(phi)),                :(sqrtmu1*s), :(sqrt(mu)*sin(phi))),
-                  (:cn, :(cos(phi)),                :(cos(phi)),  :(sqrt(1. - mu*sin(phi)^2))),
-                  (:dn, :(sqrt(1. - m*sin(phi)^2)), :(1.),        :(cos(phi))))
+                  (:cn, :(cos(phi)),                :(cos(phi)),  :(sqrt(1 - mu*sin(phi)^2))),
+                  (:dn, :(sqrt(1 - m*sin(phi)^2)), :(1),        :(cos(phi))))
     @eval begin
-        function ($f)(u::Float64, m::Float64)
+        function ($f)(u, m)
             # Abramowitz & Stegun, section 16.10, p573
             lt0 = m < 0.
             gt1 = m > 1.
@@ -64,13 +63,13 @@ for (f,a,b,c) in ((:sn, :(sin(phi)),                :(sqrtmu1*s), :(sqrt(mu)*sin
                 phi = _am(u,m)
                 return $a
             elseif lt0
-                mu1 = 1.0/(1. - m)
+                mu1 = inv(1 - m)
                 mu = -m*mu1
                 sqrtmu1 = sqrt(mu1)
                 v = u/sqrtmu1
                 phi = _am(v,mu)
                 s = sin(phi)
-                return ($b)/sqrt(1. - mu*s^2)
+                return ($b)/sqrt(1 - mu*s^2)
             elseif gt1
                 mu = 1/m
                 v = u*sqrt(m)
@@ -90,13 +89,13 @@ for (p,num) in xn, (q,den) in xn
 
         Compute the Jacobi elliptic function $($f)(u | m)
         """
-        ($f)(u::Real, m::Real) = ($f)(Float64(u), Float64(m))
+        ($f)(u::Real, m::Real) = ($f)(u, m)
     end
 
     if (p == q)
-        @eval ($f)(::Float64, ::Float64) = 1.0
+        @eval ($f)(::T, ::T) where {T} = 1.0
     elseif (q != :n)
-        @eval ($f)(u::Float64, m::Float64) = ($num)/($den)
+        @eval ($f)(u::T, m::T) where {T} = ($num)/($den)
     end
 end
 
