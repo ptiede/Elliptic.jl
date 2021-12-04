@@ -72,8 +72,24 @@ function rawF(sinphi::Float64, m::Float64)
 end
 
 function F(phi::Float64, m::Float64)
+    if m > 1.0
+        # Abramowitz & Stegum (17.4.15)
+        m12 = sqrt(m)
+        theta = asin(m12*sin(phi))
+        return 1/m12*_F(theta, 1/m)
+    elseif m < 0.0
+        # Abramowitz & Stegum (17.4.17)
+        n = -m
+        m12 = 1/sqrt(1+n)
+        m1m = n/(1+n)
+        return m12*K(m1m) - m12*_F(π/2-phi, m1m)
+    end
+    return _F(phi, m)
+end
+
+function _F(phi::Float64, m::Float64)
     if isnan(phi) || isnan(m) return NaN end
-    if m < 0. || m > 1. throw(DomainError(m, "argument m not in [0,1]")) end
+    #if m < 0. || m > 1. throw(DomainError(m, "argument m not in [0,1]")) end
     if abs(phi) > pi/2
         # Abramowitz & Stegun (17.4.3)
         phi2 = phi + pi/2
