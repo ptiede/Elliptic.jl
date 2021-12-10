@@ -73,10 +73,11 @@ end
 
 function F(phi::Float64, m::Float64)
     if m > 1.0
-        # Abramowitz & Stegum (17.4.15)
+        ## Abramowitz & Stegum (17.4.15)
         m12 = sqrt(m)
         theta = asin(m12*sin(phi))
         return 1/m12*_F(theta, 1/m)
+        #return NaN
     elseif m < 0.0
         # Abramowitz & Stegum (17.4.17)
         n = -m
@@ -109,7 +110,8 @@ function K(m::Float64)
     elseif isnan(m)
         return NaN
     else
-        throw(DomainError(m, "argument m not <= 1"))
+        return NaN
+        #throw(DomainError(m, "argument m not <= 1"))
     end
 end
 K(x::Float32) = Float32(K(Float64(x)))

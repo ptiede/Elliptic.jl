@@ -6,6 +6,9 @@ desc = "Elliptic integrals and Jacobi elliptic special functions"
 author = ["Mike Nolta <mike@nolta.net>"]
 version = "1.0.1"
 
+[deps]
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+
 [compat]
 julia = "1"
 

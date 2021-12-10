@@ -1,5 +1,5 @@
 module Jacobi
-
+using StaticArrays
 export am,
     sn, cn, dn, nn,
     sd, cd, dd, nd,
@@ -7,10 +7,11 @@ export am,
     ss, cs, ds, ns
 
 # Abramowitz & Stegun, section 16.4, p571
-const _ambuf = Array{Float64}(undef, 10)
+#const _ambuf = Array{Float64}(undef, 10)
 function _am(u::Float64, m::Float64, tol::Float64)
     if u == 0. return 0. end
 
+    _ambuf = MVector{10, Float64}(undef)#(Array{Float64}(undef, 10)
     sqrt_tol = sqrt(tol)
     if m < sqrt_tol
         # A&S 16.13.4
