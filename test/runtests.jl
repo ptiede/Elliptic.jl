@@ -2,6 +2,7 @@ using Test
 using SpecialFunctions: gamma
 using Elliptic
 using DelimitedFiles: readdlm
+#using Zygote
 
 @testset "NaNs" begin
     @test E(NaN) === NaN
@@ -718,3 +719,4 @@ end
 end
 
 include("jacobi_tests.jl")
+include("chainrules.jl")

@@ -7,6 +7,7 @@ author = ["Mike Nolta <mike@nolta.net>"]
 version = "1.0.1"
 
 [deps]
+ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
