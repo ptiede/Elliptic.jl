@@ -1,5 +1,6 @@
 # Rules for Elliptic E
 using ChainRulesCore
+using ForwardDiff
 
 function ChainRulesCore.rrule(::typeof(Elliptic.E), phi, m)
     y = E(phi, m)
@@ -48,13 +49,38 @@ function ChainRulesCore.rrule(::typeof(E), m)
     return k, ellipke_pullback
 end
 
-# function ChainRulesCore.rrule(::typeof(Jacobi.am), u, m)
-#     y = am(u, m)
-#     function am_pullback(ȳ)
-#         f̄ = NoTangent()
-#         ū = dn(u, m)
-#         m̄ = @thunk begin
-#             central
-#         end
-#     end
-# end
+function ChainRulesCore.rrule(::typeof(Jacobi.sn), u, m)
+    sn, cn, dn = ellipj(u, m)
+    ms(x) = Jacobi.sn(u, x)
+    function sn_pullback(ȳ)
+        f̄ = NoTangent()
+        ū = cn*dn
+        m̄ = ForwardDiff.derivative(ms, m)
+        return  f̄, ū, m̄
+    end
+    return sn, sn_pullback
+end
+
+function ChainRulesCore.rrule(::typeof(Jacobi.cn), u, m)
+    sn, cn, dn = ellipj(u, m)
+    ms(x) = Jacobi.cn(u, x)
+    function cn_pullback(ȳ)
+        f̄ = NoTangent()
+        ū = -sn*dn
+        m̄ = ForwardDiff.derivative(ms, m)
+        return  f̄, ū, m̄
+    end
+    return cn, cn_pullback
+end
+
+function ChainRulesCore.rrule(::typeof(Jacobi.dn), u, m)
+    sn, cn, dn = ellipj(u, m)
+    ms(x) = Jacobi.dn(u, x)
+    function dn_pullback(ȳ)
+        f̄ = NoTangent()
+        ū = -m*sn*cn
+        m̄ = ForwardDiff.derivative(ms, m)
+        return  f̄, ū, m̄
+    end
+    return dn, dn_pullback
+end

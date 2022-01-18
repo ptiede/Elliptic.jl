@@ -90,12 +90,11 @@ function ellipj_dispatch(u,m, ::Val{N}) where {N}
 end
 
 Base.@pure function nsteps(M)
-    mstart = _convfac(M)
+    m = _convfac(M)
     ε = _vareps(M)
-    mp = mstart
     i = 0
-    while abs(mp) > ε
-        mp = descstep(mp)^2
+    while abs(m) > ε
+        m = descstep(m)^2
         i += 1
     end
     return i
@@ -104,8 +103,8 @@ end
 @inline _convfac(::Type{<:Real}) = 0.5
 @inline _convfac(::Type{<:Complex}) = 0.5 + sqrt(3)/2im
 
-@inline _vareps(::Type{<:Complex{T}}) where {T} = sqrt(eps(T))
-@inline _vareps(T::Type{<:Real}) = sqrt(eps(T))
+@inline _vareps(::Type{<:Complex{T}}) where {T} = Float64(sqrt(eps(T)))
+@inline _vareps(T::Type{<:Real}) = Float64(sqrt(eps(T)))
 
 #Base.@pure nsteps(ε,::Type{<:Real}) = nsteps(0.5,ε) # Guarantees convergence in [-1,0.5]
 #Base.@pure nsteps(ε,::Type{<:Complex}) = nsteps(0.5+sqrt(3)/2im,ε) # This is heuristic.
